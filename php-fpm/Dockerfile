@@ -20,6 +20,17 @@ LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 ARG LARADOCK_PHP_VERSION
 
+#!##########################################################################
+#! Modified
+
+COPY php${LARADOCK_PHP_VERSION}.ini /usr/local/etc/php/php.ini
+
+ARG APP_CODE_PATH_HOST=../
+ARG APP_CODE_PATH_CONTAINER=/var/www
+COPY ${APP_CODE_PATH_HOST} ${APP_CODE_PATH_CONTAINER}
+
+#!##########################################################################
+
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
