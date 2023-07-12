@@ -138,7 +138,10 @@ services:
       volumes:
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
         # - ./php-worker/supervisord.d:/etc/supervisord.d
-        - ./keys/:/root/keys/
+        #!#############################################
+        #! Modified
+        - ${KEYS_PATH_HOST}:/root/keys/
+        #!#############################################
       ports:
         - "${WORKSPACE_SSH_PORT}:22"
       tty: true
@@ -244,15 +247,11 @@ services:
           - no_proxy
           #!#############################################
           #! Modified
-          - ENVIRONMENT=dev
+          - DEPLOYMENT_CONTEXT=local
           #!#############################################
       volumes:
         - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-        #!#############################################
-        #! Modified
-        - ${KEYS_PATH_HOST}:/root/keys/
-        #!#############################################
       expose:
         - "9000"
       depends_on:
@@ -275,7 +274,7 @@ services:
           - no_proxy
           #!#############################################
           #! Modified
-          - ENVIRONMENT=dev
+          - DEPLOYMENT_CONTEXT=local
           #!#############################################
       volumes:
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
