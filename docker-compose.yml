@@ -13,7 +13,6 @@ services:
 
 ### Workspace Utilities ##################################
     workspace:
-      image: 525408006129.dkr.ecr.us-west-2.amazonaws.com/delivery-api-admin-workspace
       build:
         context: ./workspace
         args:
@@ -138,19 +137,10 @@ services:
           - no_proxy
       volumes:
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-        # - docker-in-docker:/certs/client
         # - ./php-worker/supervisord.d:/etc/supervisord.d
         - ./keys/:/root/keys/
-      # extra_hosts:
-      #   - "dockerhost:${DOCKER_HOST_IP}"
       ports:
         - "${WORKSPACE_SSH_PORT}:22"
-        # - "${WORKSPACE_BROWSERSYNC_HOST_PORT}:3000"
-        # - "${WORKSPACE_BROWSERSYNC_UI_HOST_PORT}:3001"
-        # - "${WORKSPACE_VUE_CLI_SERVE_HOST_PORT}:8080"
-        # - "${WORKSPACE_VUE_CLI_UI_HOST_PORT}:8000"
-        # - "${WORKSPACE_ANGULAR_CLI_SERVE_HOST_PORT}:4200"
-        # - "${WORKSPACE_VITE_PORT}:5173"
       tty: true
       environment:
         - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
@@ -160,14 +150,10 @@ services:
         - DOCKER_CERT_PATH=/certs/client
         - CHOKIDAR_USEPOLLING=true
       networks:
-        # - frontend
         - backend
-      # links:
-      #   - docker-in-docker
 
 ### PHP-FPM ##############################################
     php-fpm:
-      image: 525408006129.dkr.ecr.us-west-2.amazonaws.com/delivery-api-admin-php-fpm
       build:
         context: ./php-fpm
         args:
@@ -256,36 +242,26 @@ services:
           - http_proxy
           - https_proxy
           - no_proxy
+          #!#############################################
+          #! Modified
+          - ENVIRONMENT=${ENVIRONMENT}
+          - APP_CODE_PATH_HOST=../../
+          - APP_CODE_PATH_CONTAINER=${APP_CODE_PATH_CONTAINER}
+          #!#############################################
       volumes:
-        # - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
+        - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-        # - docker-in-docker:/certs/client
       expose:
         - "9000"
-      # extra_hosts:
-      #   - "dockerhost:${DOCKER_HOST_IP}"
-      # environment:
-      #   - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
-      #   - DOCKER_HOST=tcp://docker-in-docker:2376
-      #   - DOCKER_TLS_VERIFY=1
-      #   - DOCKER_TLS_CERTDIR=/certs
-      #   - DOCKER_CERT_PATH=/certs/client
-      #   - FAKETIME=${PHP_FPM_FAKETIME}
       depends_on:
         - workspace
-        #!#############################################
-        #! Modified
         - redis
         - mysql
-        #!#############################################
       networks:
         - backend
-      # links:
-      #   - docker-in-docker
 
 ### NGINX Server #########################################
     nginx:
-      image: 525408006129.dkr.ecr.us-west-2.amazonaws.com/delivery-api-admin-nginx
       build:
         context: ./nginx
         args:
@@ -297,14 +273,17 @@ services:
           - no_proxy
           #!#############################################
           #! Modified
+          - ENVIRONMENT=${ENVIRONMENT}
           - NGINX_SITES_PATH=sites
           - NGINX_SSL_PATH=ssl
+          - APP_CODE_PATH_HOST=../../
+          - APP_CODE_PATH_CONTAINER=${APP_CODE_PATH_CONTAINER}
           #!#############################################
       volumes:
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-        # - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
-        # - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
-        # - ${NGINX_SSL_PATH}:/etc/nginx/ssl
+        - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+        - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+        - ${NGINX_SSL_PATH}:/etc/nginx/ssl
       ports:
         - "${NGINX_HOST_HTTP_PORT}:80"
         - "${NGINX_HOST_HTTPS_PORT}:443"
@@ -312,7 +291,6 @@ services:
       depends_on:
         - php-fpm
       networks:
-        # - frontend
         - backend
 
 ### MySQL ################################################
