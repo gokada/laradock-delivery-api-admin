@@ -4,10 +4,10 @@ LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 #!##########################################################################
 #! Modified
-
 # Change the build context
 ARG CUSTOM_CONTEXT='./'
-
+ARG PHP_UPSTREAM_CONTAINER_CLOUD=127.0.0.1
+ARG PHP_UPSTREAM_PORT_CLOUD=9000
 #!##########################################################################
 
 #! Modified
@@ -43,9 +43,14 @@ RUN touch /var/log/messages
 #! Modified
 COPY ${CUSTOM_CONTEXT}logrotate/nginx /etc/logrotate.d/
 
+#!##########################################################################
+#! Modified
 # Set upstream conf and remove the default conf
-RUN echo "upstream php-upstream { server ${PHP_UPSTREAM_CONTAINER}:${PHP_UPSTREAM_PORT}; }" > /etc/nginx/conf.d/upstream.conf \
-    && rm /etc/nginx/conf.d/default.conf
+RUN if [ "$DEPLOYMENT_CONTEXT" = "cloud" ]; then \
+        echo "upstream php-upstream { server ${PHP_UPSTREAM_CONTAINER_CLOUD}:${PHP_UPSTREAM_PORT_CLOUD}; }" > /etc/nginx/conf.d/upstream.conf; \
+    else echo "upstream php-upstream { server ${PHP_UPSTREAM_CONTAINER}:${PHP_UPSTREAM_PORT}; }" > /etc/nginx/conf.d/upstream.conf; \
+    fi
+#!##########################################################################
 
 #! Modified
 ADD ${CUSTOM_CONTEXT}./startup.sh /opt/startup.sh
@@ -54,7 +59,6 @@ CMD ["/bin/bash", "/opt/startup.sh"]
 
 #!##########################################################################
 #! Modified
-
 # Set the deployment context [cloud | local]
 ARG DEPLOYMENT_CONTEXT=local
 
@@ -82,7 +86,6 @@ RUN if [ "$DEPLOYMENT_CONTEXT" = "cloud" ]; then \
 
 # Remove the temporary directory
 RUN rm -R /tmp-build-cache
-
 #!##########################################################################
 
 EXPOSE 80 81 443
