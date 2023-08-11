@@ -6,6 +6,9 @@ LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 #! Modified
 # Change the build context
 ARG CUSTOM_CONTEXT='./'
+# Set the deployment context [cloud | local]
+ARG DEPLOYMENT_CONTEXT=local
+
 ARG PHP_UPSTREAM_CONTAINER_CLOUD=127.0.0.1
 ARG PHP_UPSTREAM_PORT_CLOUD=9000
 #!##########################################################################
@@ -59,9 +62,6 @@ CMD ["/bin/bash", "/opt/startup.sh"]
 
 #!##########################################################################
 #! Modified
-# Set the deployment context [cloud | local]
-ARG DEPLOYMENT_CONTEXT=local
-
 # Copy the config files to a temporary directory
 ARG NGINX_SITES_PATH=sites
 ARG NGINX_SSL_PATH=ssl
