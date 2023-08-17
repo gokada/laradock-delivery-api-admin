@@ -1864,3 +1864,25 @@ RUN apt-get clean && \
 
 # Set default work directory
 WORKDIR /var/www
+
+#!##########################################################################
+#! Modified
+# Set the deployment context [cloud | local]
+ARG DEPLOYMENT_CONTEXT=local
+
+# Copy the codebase to a temporary directory
+ARG APP_CODE_PATH_HOST=./
+ARG APP_CODE_PATH_CONTAINER=/var/www
+COPY ${CUSTOM_CONTEXT}${APP_CODE_PATH_HOST} /tmp-build-cache/codebase
+
+# During cloud deployment move the codebase to the appropriate directory
+RUN if [ "$DEPLOYMENT_CONTEXT" = "cloud" ]; then \
+        cp -a /tmp-build-cache/codebase/. ${APP_CODE_PATH_CONTAINER}/; \
+        # Ensure application can write to log files
+        # chown -R www-data:www-data /var/www/storage; \
+        chmod o+w ./storage/ -R; \
+    fi
+
+# Remove the temporary directory
+RUN rm -R /tmp-build-cache
+#!##########################################################################
